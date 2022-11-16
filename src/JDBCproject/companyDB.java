@@ -28,7 +28,7 @@ public class companyDB implements ActionListener {
     static JLabel salaryLable= new JLabel("(입력한 금액보다 높은 연봉의 직원을 검색합니다.)");
     static JComboBox birthMonth= new JComboBox(birthMonthList);
     static JTextField subOrdinate= new JTextField(20);
-    static JLabel subLable= new JLabel("(입력한 직원의 부하 직원을 검색합니다.)");
+    static JLabel subLable= new JLabel("(입력한 Ssn에 해당하는 직원의 부하 직원을 검색합니다.)");
 
     private static JCheckBox selectName= new JCheckBox("Name", true);
     private static JCheckBox selectSsn= new JCheckBox("Ssn", true);
@@ -132,18 +132,20 @@ public class companyDB implements ActionListener {
         searchBT.addActionListener(this);
 
         // 왼쪽 하단
-        JPanel ShowSelectedPanel = new JPanel();
-        ShowSelectedPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        Emplabel.setFont(new Font("Dialog", Font.BOLD, 16));
-        ShowSelectedEmp.setFont(new Font("Dialog", Font.BOLD, 16));
-        dShow = "";
-        ShowSelectedPanel.add(Emplabel);
-        ShowSelectedPanel.add(ShowSelectedEmp);
 
         JPanel TotalPanel = new JPanel();
         TotalPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         TotalPanel.add(totalEmp);
         TotalPanel.add(totalCount);
+
+        JPanel ShowSelectedPanel = new JPanel();
+        ShowSelectedPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        Emplabel.setFont(new Font("Dialog", Font.BOLD, 14));
+        ShowSelectedEmp.setFont(new Font("Dialog", Font.BOLD, 14));
+        dShow = "";
+        ShowSelectedPanel.add(Emplabel);
+        ShowSelectedPanel.add(ShowSelectedEmp);
+        ShowSelectedPanel.setBackground(new Color(244, 250, 222));
 
         // 중심 하단
         JPanel UpdatePanel = new JPanel();
@@ -356,7 +358,7 @@ public class companyDB implements ActionListener {
                         JOptionPane.showMessageDialog(null, "입력된 내용이 없습니다.");
                     }
                     else{
-                        selectOn+= (" and s.fname = \""+subOrdinate.getText()+"\""); // 이거  fname만 검색하면 되나?
+                        selectOn+= (" and s.ssn = \""+subOrdinate.getText()+"\"");
                     }
                 }
 
