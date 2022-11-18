@@ -20,6 +20,7 @@ public class companyDB implements ActionListener {
     public ResultSet r;
 
     private final JComboBox Attribute;
+
     static String[] DepartmentList = {"Research", "Administration", "Headquarters"};
     static String[] SexList = {"F", "M"};
     static String[] birthMonthList = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
@@ -39,6 +40,7 @@ public class companyDB implements ActionListener {
     private static JCheckBox selectSalary = new JCheckBox("Salary", true);
     private static JCheckBox selectSuv = new JCheckBox("Supervisor", true);
     private static JCheckBox selectDep = new JCheckBox("Department", true);
+    
     private Vector<String> tableHead = new Vector<String>();
 
     private JTable table;
@@ -372,8 +374,10 @@ public class companyDB implements ActionListener {
                     System.out.println("부하직원 선택");
                     if (subOrdinate.getText().equals("")) {
                         JOptionPane.showMessageDialog(null, "입력된 내용이 없습니다.");
+
                     } else {
                         selectOn += (" and s.ssn = \"" + subOrdinate.getText() + "\"");
+
                     }
                 }
 
