@@ -1,7 +1,6 @@
 package JDBCproject;
 
 import JDBCproject.insert.InsertGUI;
-import org.w3c.dom.Attr;
 
 import java.sql.*;
 import java.util.*;
@@ -16,8 +15,8 @@ import javax.swing.event.TableModelListener;
 public class companyDB implements ActionListener {
     // GUI 선언
     public static JFrame frame = new JFrame("Employee Search System");
-    public Statement s;
-    public ResultSet r;
+    public Statement state;
+    public ResultSet resultSet;
 
     private final JComboBox Attribute;
 
@@ -40,7 +39,7 @@ public class companyDB implements ActionListener {
     private static JCheckBox selectSalary = new JCheckBox("Salary", true);
     private static JCheckBox selectSuv = new JCheckBox("Supervisor", true);
     private static JCheckBox selectDep = new JCheckBox("Department", true);
-    
+
     private Vector<String> tableHead = new Vector<String>();
 
     private JTable table;
@@ -48,18 +47,18 @@ public class companyDB implements ActionListener {
     private static final int selectColumn = 0;
     private int columnOfName = 0;
     private int columnOfSalary = 0;
-    private String dShow;
+    private String showNameList;
 
     private JButton searchBT = new JButton("검색");
     //Container me = this;
 
-    private JLabel totalEmp = new JLabel("인원수 : ");
+    private JLabel totalEmp = new JLabel("검색된 인원 수 : ");
     final JLabel totalCount = new JLabel();
     JPanel panel;
     JScrollPane ScPane;
     private JLabel Emplabel = new JLabel("선택한 직원: ");
     private JLabel ShowSelectedEmp = new JLabel();
-    private JLabel Setlabel = new JLabel("새로운 Salary: ");
+    private JLabel Setlabel = new JLabel("업데이트: ");
     private JTextField setSalary = new JTextField(10);
     private JButton updateBT = new JButton("UPDATE");
     private JButton deleteBT = new JButton("선택한 데이터 삭제");
@@ -67,7 +66,7 @@ public class companyDB implements ActionListener {
     int count = 0;
 
     public companyDB() {
-        // panel에 Category 콤보박스 추가
+        // 검색 범위 panel에 콤보박스 추가
         JPanel attributePanel = new JPanel();
         String[] Attributes = {"전체", "부서", "성별", "연봉", "생일", "부하직원"};
         this.Attribute = new JComboBox(Attributes);
@@ -76,6 +75,21 @@ public class companyDB implements ActionListener {
         attributePanel.add(this.Attribute);
 
         final int[] selectedIndex = {0};
+
+        // 검색 항목 패널에 체크박스 추가
+        JPanel CheckBoxPanel = new JPanel();
+        CheckBoxPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        CheckBoxPanel.add(new JLabel("EMPLOYEE 검색 항목 "));
+        CheckBoxPanel.add(selectName);
+        CheckBoxPanel.add(selectSsn);
+        CheckBoxPanel.add(selectBdate);
+        CheckBoxPanel.add(selectAddress);
+        CheckBoxPanel.add(selectSex);
+        CheckBoxPanel.add(selectSalary);
+        CheckBoxPanel.add(selectSuv);
+        CheckBoxPanel.add(selectDep);
+        CheckBoxPanel.add(searchBT);
+        searchBT.addActionListener(this);
 
         this.Attribute.addActionListener(new ActionListener() {
             // Category 선택 시 event : setVisible(true)
@@ -120,21 +134,6 @@ public class companyDB implements ActionListener {
             }
         });
 
-        // 체크박스 추가
-        JPanel CheckBoxPanel = new JPanel();
-        CheckBoxPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        CheckBoxPanel.add(new JLabel("EMPLOYEE 검색 항목 "));
-        CheckBoxPanel.add(selectName);
-        CheckBoxPanel.add(selectSsn);
-        CheckBoxPanel.add(selectBdate);
-        CheckBoxPanel.add(selectAddress);
-        CheckBoxPanel.add(selectSex);
-        CheckBoxPanel.add(selectSalary);
-        CheckBoxPanel.add(selectSuv);
-        CheckBoxPanel.add(selectDep);
-        CheckBoxPanel.add(searchBT);
-        searchBT.addActionListener(this);
-
         // 왼쪽 하단
 
         JPanel TotalPanel = new JPanel();
@@ -146,7 +145,7 @@ public class companyDB implements ActionListener {
         ShowSelectedPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         Emplabel.setFont(new Font("Dialog", Font.BOLD, 14));
         ShowSelectedEmp.setFont(new Font("Dialog", Font.BOLD, 14));
-        dShow = "";
+        showNameList = "";
         ShowSelectedPanel.add(Emplabel);
         ShowSelectedPanel.add(ShowSelectedEmp);
         ShowSelectedPanel.setBackground(new Color(244, 250, 222));
@@ -175,9 +174,9 @@ public class companyDB implements ActionListener {
         Top.add(attributePanel);
         Top.add(CheckBoxPanel);
 
-        JPanel Halfway = new JPanel();
-        Halfway.setLayout(new BoxLayout(Halfway, BoxLayout.X_AXIS));
-        Halfway.add(ShowSelectedPanel);
+        JPanel SelectPanel = new JPanel();
+        SelectPanel.setLayout(new BoxLayout(SelectPanel, BoxLayout.X_AXIS));
+        SelectPanel.add(ShowSelectedPanel);
 
         JPanel Bottom = new JPanel();
         Bottom.setLayout(new BoxLayout(Bottom, BoxLayout.X_AXIS));
@@ -187,7 +186,7 @@ public class companyDB implements ActionListener {
 
         JPanel ShowVertical = new JPanel();
         ShowVertical.setLayout(new BoxLayout(ShowVertical, BoxLayout.Y_AXIS));
-        ShowVertical.add(Halfway);
+        ShowVertical.add(SelectPanel);
         ShowVertical.add(Bottom);
 
         frame.add(Top, BorderLayout.NORTH);
@@ -201,19 +200,20 @@ public class companyDB implements ActionListener {
 
     }
 
-    public Connection conn;
-    private static final String user = "root";
-    private static final String pwd = "4290514l@"; // 각자 비밀번호
-    private static final String dbname = "mydb"; // 각자 db 이름
-    private static final String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
-    static String selectOn = "select";
 
+
+    public Connection conn;
+    private static final String user= "root";
+    private static final String pwd= "0000"; // 각자 비밀번호
+    private static final String dbname= "DB"; // 각자 db 이름
+    private static final String url= "jdbc:mysql://localhost:3306/" +dbname+ "?serverTimezone=UTC";
+    static String selectOn= "select";
     public void actionPerformed(ActionEvent e) {
 
         // DB 연결
         try {
             Class.forName("com.mysql.cj.jdbc.Driver"); // JDBC 드라이버 연결
-            conn = DriverManager.getConnection(url, user, pwd);
+            conn = DriverManager.getConnection(url,user,pwd);
             System.out.println("연결 성공.");
 
         } catch (SQLException e1) {
@@ -225,11 +225,11 @@ public class companyDB implements ActionListener {
         }
 
         if (count == 1) {
-            //me.remove(panel);
+            frame.remove(panel);
             frame.revalidate();
         }
 
-
+        // 검색
         if (e.getSource() == searchBT) {
             if (selectName.isSelected() || selectSsn.isSelected() || selectBdate.isSelected()
                     || selectAddress.isSelected() || selectSex.isSelected() || selectSalary.isSelected()
@@ -374,7 +374,6 @@ public class companyDB implements ActionListener {
                     System.out.println("부하직원 선택");
                     if (subOrdinate.getText().equals("")) {
                         JOptionPane.showMessageDialog(null, "입력된 내용이 없습니다.");
-
                     } else {
                         selectOn += (" and s.ssn = \"" + subOrdinate.getText() + "\"");
 
@@ -412,17 +411,17 @@ public class companyDB implements ActionListener {
 
                 try {
                     count = 1;
-                    s = conn.createStatement();
-                    r = s.executeQuery(selectOn + ";");
-                    ResultSetMetaData rsmd = r.getMetaData();
-                    int columnCnt = rsmd.getColumnCount();
+                    state = conn.createStatement();
+                    resultSet = state.executeQuery(selectOn + ";");
+                    ResultSetMetaData resultSet = this.resultSet.getMetaData();
+                    int columnCnt = resultSet.getColumnCount();
                     int rowCnt = table.getRowCount();
 
-                    while (r.next()) {
+                    while (this.resultSet.next()) {
                         Vector<Object> tuple = new Vector<Object>();
                         tuple.add(false);
                         for (int i = 1; i < columnCnt + 1; i++) {
-                            tuple.add(r.getString(rsmd.getColumnName(i)));
+                            tuple.add(this.resultSet.getString(resultSet.getColumnName(i)));
                         }
                         model.addRow(tuple);
                         rowCnt++;
@@ -443,7 +442,7 @@ public class companyDB implements ActionListener {
                 frame.revalidate();
 
             } else {
-                JOptionPane.showMessageDialog(null, "검색 항목을 한개 이상 선택하세요.");
+                JOptionPane.showMessageDialog(null, "검색 항목을 하나 이상 선택하세요.");
             }
 
         }
@@ -453,30 +452,27 @@ public class companyDB implements ActionListener {
         public void tableChanged(TableModelEvent e) {
             int row = e.getFirstRow();
             int column = e.getColumn();
+
             if (column == selectColumn) {
                 TableModel model = (TableModel) e.getSource();
-                String columnName = model.getColumnName(1);
+                String cName = model.getColumnName(1);
                 Boolean checked = (Boolean) model.getValueAt(row, column);
-                if (columnName == "NAME") {
+                if (cName == "NAME") {
+                    showNameList = "";
                     if (checked) {
-                        dShow = "";
                         for (int i = 0; i < table.getRowCount(); i++) {
                             if (table.getValueAt(i, 0) == Boolean.TRUE) {
-                                dShow += (String) table.getValueAt(i, columnOfName) + "    ";
-
+                                showNameList += (String) table.getValueAt(i, columnOfName) + "    ";
                             }
                         }
-                        ShowSelectedEmp.setText(dShow);
                     } else {
-                        dShow = "";
                         for (int i = 0; i < table.getRowCount(); i++) {
                             if (table.getValueAt(i, 0) == Boolean.TRUE) {
-                                dShow += (String) table.getValueAt(i, 1) + "    ";
-
+                                showNameList += (String) table.getValueAt(i, 1) + "    ";
                             }
                         }
-                        ShowSelectedEmp.setText(dShow);
                     }
+                    ShowSelectedEmp.setText(showNameList);
                 }
             }
         }

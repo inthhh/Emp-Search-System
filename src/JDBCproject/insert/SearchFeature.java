@@ -5,8 +5,8 @@ import java.sql.*;
 public class SearchFeature {
 
     private static final String user = "root";
-    private static final String pwd = "4290514l@"; // 각자 비밀번호
-    private static final String dbname = "mydb"; // 각자 db 이름
+    private static final String pwd = "0000"; // 각자 비밀번호
+    private static final String dbname = "DB"; // 각자 db 이름
     private static final String url = "jdbc:mysql://localhost:3306/" + dbname + "?serverTimezone=UTC";
 
     public void InsertEmployee(String F, String M, String L, String Ssn, String B,
