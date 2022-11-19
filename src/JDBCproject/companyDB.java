@@ -42,7 +42,7 @@ public class companyDB implements ActionListener {
 
     private Vector<String> tableHead = new Vector<String>();
 
-    private JTable table;
+    private JTable dbTable;
     private DefaultTableModel model;
     private static final int selectColumn = 0;
     private int columnOfName = 0;
@@ -50,12 +50,11 @@ public class companyDB implements ActionListener {
     private String showNameList;
 
     private JButton searchBT = new JButton("검색");
-    //Container me = this;
 
     private JLabel totalEmp = new JLabel("검색된 인원 수 : ");
     final JLabel totalCount = new JLabel();
     JPanel panel;
-    JScrollPane ScPane;
+    JScrollPane scrollPanel;
     private JLabel Emplabel = new JLabel("선택한 직원: ");
     private JLabel ShowSelectedEmp = new JLabel();
     private JLabel Setlabel = new JLabel("업데이트: ");
@@ -397,7 +396,7 @@ public class companyDB implements ActionListener {
                         columnOfSalary = i;
                     }
                 }
-                table = new JTable(model) {
+                dbTable = new JTable(model) {
                     @Override
                     public Class getColumnClass(int column) {
                         if (column == 0) {
@@ -414,8 +413,9 @@ public class companyDB implements ActionListener {
                     state = conn.createStatement();
                     resultSet = state.executeQuery(selectOn + ";");
                     ResultSetMetaData resultSet = this.resultSet.getMetaData();
+                    int rowCnt = dbTable.getRowCount();
                     int columnCnt = resultSet.getColumnCount();
-                    int rowCnt = table.getRowCount();
+
 
                     while (this.resultSet.next()) {
                         Vector<Object> tuple = new Vector<Object>();
@@ -434,10 +434,10 @@ public class companyDB implements ActionListener {
 
                 }
                 panel = new JPanel();
-                ScPane = new JScrollPane(table);
-                table.getModel().addTableModelListener(new CheckBoxModelListener());
-                ScPane.setPreferredSize(new Dimension(1100, 400));
-                panel.add(ScPane);
+                scrollPanel = new JScrollPane(dbTable);
+                dbTable.getModel().addTableModelListener(new CheckBoxModelListener());
+                scrollPanel.setPreferredSize(new Dimension(1200, 300));
+                panel.add(scrollPanel);
                 frame.add(panel, BorderLayout.CENTER);
                 frame.revalidate();
 
@@ -445,6 +445,62 @@ public class companyDB implements ActionListener {
                 JOptionPane.showMessageDialog(null, "검색 항목을 하나 이상 선택하세요.");
             }
 
+        }
+
+        if (e.getSource() == deleteBT) {
+
+            int rowCount = 0;
+
+            Vector<String> selectedToDelete = new Vector<String>();
+
+//            if (dbTable.getValueAt(rowCount, 0) != Boolean.TRUE) { // 선택된 행이 없을 때 메시지창?
+//                System.out.println("선택 없음");
+//                JOptionPane.showMessageDialog(null, "선택된 직원이 없습니다.");
+//            }
+
+            try {
+                String columnName = model.getColumnName(2);
+//                System.out.println(columnName);
+                if (columnName == "SSN") {
+                    while (rowCount < dbTable.getRowCount()) {
+                        if (dbTable.getValueAt(rowCount, 0) == Boolean.TRUE) {
+                            selectedToDelete.add((String) dbTable.getValueAt(rowCount, 2));
+                        }
+                        rowCount++;
+                    }
+
+                    for (int i = 0; i < selectedToDelete.size(); i++) {
+                        for (int j = 0; j < model.getRowCount(); j++) {
+                            if (dbTable.getValueAt(j, 0) == Boolean.TRUE) {
+                                model.removeRow(j);
+                                totalCount.setText(String.valueOf(dbTable.getRowCount()));
+                            }
+                        }
+                    }
+
+                    for (int i = 0; i < selectedToDelete.size(); i++) {
+                        String query = "DELETE FROM EMPLOYEE WHERE Ssn=?";
+                        PreparedStatement pstm = conn.prepareStatement(query);
+                        pstm.clearParameters();
+                        pstm.setString(1, String.valueOf(selectedToDelete.get(i)));
+                        pstm.executeUpdate();
+                    }
+
+                }
+
+                ShowSelectedEmp.setText(" ");
+
+            } catch (SQLException er) {
+                System.out.println("actionPerformed err : " + er);
+                er.printStackTrace();
+            }
+
+            panel = new JPanel();
+            scrollPanel = new JScrollPane(dbTable);
+            scrollPanel.setPreferredSize(new Dimension(1200, 300));
+            panel.add(scrollPanel);
+            frame.add(panel, BorderLayout.CENTER);
+            frame.revalidate();
         }
     }
 
@@ -460,15 +516,15 @@ public class companyDB implements ActionListener {
                 if (cName == "NAME") {
                     showNameList = "";
                     if (checked) {
-                        for (int i = 0; i < table.getRowCount(); i++) {
-                            if (table.getValueAt(i, 0) == Boolean.TRUE) {
-                                showNameList += (String) table.getValueAt(i, columnOfName) + "    ";
+                        for (int i = 0; i < dbTable.getRowCount(); i++) {
+                            if (dbTable.getValueAt(i, 0) == Boolean.TRUE) {
+                                showNameList += (String) dbTable.getValueAt(i, columnOfName) + "   ";
                             }
                         }
                     } else {
-                        for (int i = 0; i < table.getRowCount(); i++) {
-                            if (table.getValueAt(i, 0) == Boolean.TRUE) {
-                                showNameList += (String) table.getValueAt(i, 1) + "    ";
+                        for (int i = 0; i < dbTable.getRowCount(); i++) {
+                            if (dbTable.getValueAt(i, 0) == Boolean.TRUE) {
+                                showNameList += (String) dbTable.getValueAt(i, 1) + "   ";
                             }
                         }
                     }
